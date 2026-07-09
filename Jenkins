@@ -1,0 +1,57 @@
+pipeline {
+
+    agent any
+
+    environment {
+        IMAGE = "prt-image"
+        CONTAINER = "prt-container"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/ankitkala2001/jenkinsdemo.git’
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE .'
+            }
+        }
+
+        stage('Remove Old Container') {
+            steps {
+                sh 'docker rm -f $CONTAINER || true'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh 'docker run --name $CONTAINER $IMAGE'
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                sh 'docker logs $CONTAINER'
+            }
+        }
+
+    }
+
+    post {
+
+        success {
+            echo 'Pipeline Completed Successfully'
+        }
+
+        failure {
+            echo 'Pipeline Failed'
+        }
+
+    }
+
+}
